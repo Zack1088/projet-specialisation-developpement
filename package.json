@@ -1,0 +1,15 @@
+{
+  "name": "projet-specialisation-developpement",
+  "version": "1.0.0",
+  "description": "Une application web pour mettre en pratique les concepts de développement moderne.",
+  "main": "backend/app.js",
+  "scripts": {
+    "start": "node backend/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Votre Nom",
+  "license": "ISC",
+  "dependencies": {
+  
+  }
+}
