@@ -10,6 +10,7 @@
   "author": "Votre Nom",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^5.1.0"
   }
 }
