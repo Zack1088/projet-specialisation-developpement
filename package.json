@@ -2,14 +2,32 @@
   "name": "projet-specialisation-developpement",
   "version": "1.0.0",
   "description": "Une application web pour mettre en pratique les concepts de développement moderne.",
-  "main": "backend/app.js",
+  "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/app.js",
+    "backend": "nodemon backend/server.js",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "start": "node backend/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Votre Nom",
+  "author": "Bastien & Zakaria",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0"
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "csurf": "^1.10.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.9",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "vite": "^5.0.0"
   }
 }
