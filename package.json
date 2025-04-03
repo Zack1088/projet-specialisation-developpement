@@ -1,15 +1,14 @@
 {
   "name": "projet-specialisation-developpement",
-  "version": "1.0.0",
-  "description": "Une application web pour mettre en pratique les concepts de développement moderne.",
-  "main": "backend/app.js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "node backend/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "author": "Votre Nom",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^5.1.0"
+  "devDependencies": {
+    "vite": "^6.2.0"
   }
 }

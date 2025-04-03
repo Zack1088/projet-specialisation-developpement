@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un produit</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/product.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Créer un produit</h2>
+        <form action="#" method="POST">
+            <input type="text" class="input-id" name="id" placeholder="ID du produit" required>
+            <input type="text" class="input-label" name="label" placeholder="Label du produit" required>
+            <textarea class="input-description" name="description" placeholder="Description du produit" required></textarea>
+            <input type="file" class="input-image" name="image" accept="image/*" required>
+            <input type="text" class="input-category" name="category" placeholder="Catégorie du produit" required>
+            <button type="submit" class="btn-submit-createProduct">Créer</button>
+        </form>
+    </div>
+</body>
+</html>
