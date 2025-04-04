@@ -1,13 +1,54 @@
-
 const api = 'http://localhost:5000/api';
 let csrfToken = '';
+let user = null;
 
-function fetchCSRF() {
-  return fetch(`${api}/csrf-token`, { credentials: 'include' })
-    .then(res => res.json())
-    .then(data => (csrfToken = data.csrfToken));
+// 🔐 Récupère le token CSRF
+async function fetchCSRF() {
+  const res = await fetch(`${api}/csrf-token`, { credentials: 'include' });
+  const data = await res.json();
+  csrfToken = data.csrfToken;
 }
 
+// 🔐 Récupère l'utilisateur connecté via /me puis /profile/:id
+async function fetchUser() {
+  try {
+    const meRes = await fetch(`${api}/auth/me`, {
+      credentials: 'include',
+    });
+    if (!meRes.ok) throw new Error('Non connecté');
+
+    const { id } = await meRes.json();
+
+    const profileRes = await fetch(`${api}/auth/profile/${id}`, {
+      credentials: 'include',
+    });
+    if (!profileRes.ok) throw new Error('Profil introuvable');
+
+    user = await profileRes.json();
+    console.log('👤 Utilisateur connecté :', user);
+    return user;
+  } catch (err) {
+    window.location.href = '/login.html';
+    return null;
+  }
+}
+
+// 🧾 Met à jour l'entête
+function updateHeader() {
+  const welcome = document.getElementById('welcomeUser');
+  const shopBtn = document.getElementById('goShopBtn');
+
+  if (user) {
+    const displayName = user.username || user.name || 'Utilisateur';
+    welcome.textContent = `Bienvenue, ${displayName} 👋`;
+    shopBtn?.classList.remove('hidden');
+  } else {
+    welcome.textContent = '';
+    shopBtn?.classList.add('hidden');
+  }
+}
+
+// 📦 Récupère les produits
 function fetchProducts() {
   return fetch(`${api}/products`, { credentials: 'include' })
     .then(res => res.json())
@@ -15,8 +56,10 @@ function fetchProducts() {
     .catch(err => console.error('Erreur chargement produits :', err));
 }
 
+// 🎨 Affiche les produits
 function renderProductList(products) {
   const container = document.getElementById('productList');
+  if (!container) return;
   container.innerHTML = '';
 
   products.forEach(p => {
@@ -36,63 +79,91 @@ function renderProductList(products) {
   });
 }
 
-document.getElementById('productForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const id = document.getElementById('productId').value;
-  const body = {
-    name: document.getElementById('name').value,
-    description: document.getElementById('description').value,
-    price: parseFloat(document.getElementById('price').value),
-    category: document.getElementById('category').value,
-    images: [],
-  };
+// ✅ Formulaire de produits
+const productForm = document.getElementById('productForm');
+if (productForm) {
+  productForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const id = document.getElementById('productId').value;
+    const body = {
+      name: document.getElementById('name').value,
+      description: document.getElementById('description').value,
+      price: parseFloat(document.getElementById('price').value),
+      category: document.getElementById('category').value,
+      images: [],
+    };
 
-  const method = id ? 'PUT' : 'POST';
-  const url = id ? `${api}/products/${id}` : `${api}/products`;
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `${api}/products/${id}` : `${api}/products`;
 
-  fetch(url, {
-    method,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': csrfToken,
-    },
-    body: JSON.stringify(body),
-  })
-    .then(res => res.json())
-    .then(() => {
+    const res = await fetch(url, {
+      method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
       e.target.reset();
       document.getElementById('productId').value = '';
-      fetchProducts();
-    });
-});
+      await fetchProducts();
+    } else {
+      alert('❌ Erreur lors de l\'enregistrement');
+    }
+  });
+}
 
-document.getElementById('productList').addEventListener('click', function (e) {
-  if (e.target.classList.contains('edit')) {
+// 🎯 Modifier / Supprimer
+const productList = document.getElementById('productList');
+if (productList) {
+  productList.addEventListener('click', async function (e) {
     const id = e.target.getAttribute('data-id');
-    fetch(`${api}/products/${id}`, { credentials: 'include' })
-      .then(res => res.json())
-      .then(p => {
-        document.getElementById('productId').value = p.id;
-        document.getElementById('name').value = p.name;
-        document.getElementById('description').value = p.description;
-        document.getElementById('price').value = p.price;
-        document.getElementById('category').value = p.category;
-      });
-  }
+    if (!id) return;
 
-  if (e.target.classList.contains('delete')) {
-    const id = e.target.getAttribute('data-id');
-    if (confirm('Confirmer la suppression ?')) {
-      fetch(`${api}/products/${id}`, {
+    if (e.target.classList.contains('edit')) {
+      const res = await fetch(`${api}/products/${id}`, { credentials: 'include' });
+      const p = await res.json();
+      document.getElementById('productId').value = p.id;
+      document.getElementById('name').value = p.name;
+      document.getElementById('description').value = p.description;
+      document.getElementById('price').value = p.price;
+      document.getElementById('category').value = p.category;
+    }
+
+    if (e.target.classList.contains('delete') && confirm('Confirmer la suppression ?')) {
+      const res = await fetch(`${api}/products/${id}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'X-CSRF-Token': csrfToken },
-      })
-        .then(res => res.json())
-        .then(() => fetchProducts());
+      });
+      if (res.ok) {
+        await fetchProducts();
+      } else {
+        alert('❌ Suppression échouée');
+      }
     }
-  }
+  });
+}
+
+// 🔓 Déconnexion
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+  await fetch(`${api}/auth/logout`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: { 'X-CSRF-Token': csrfToken },
+  });
+  window.location.href = '/';
 });
 
-fetchCSRF().then(fetchProducts);
+// 🚀 INIT
+(async function initDashboard() {
+  await fetchCSRF();
+  user = await fetchUser(); // ⚠️ Redirection ici si pas connecté
+  if (!user) return;
+
+  updateHeader();
+  await fetchProducts();
+})();

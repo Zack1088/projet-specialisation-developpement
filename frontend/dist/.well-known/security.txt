@@ -1,0 +1,4 @@
+Contact: mailto:security@votresite.com
+Expires: 2026-04-02T23:59:59.000Z
+Encryption: https://votresite.com/pgp.txt
+Acknowledgements: https://votresite.com/hall-of-fame

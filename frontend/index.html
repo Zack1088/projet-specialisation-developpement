@@ -10,22 +10,25 @@
   <body class="bg-gradient-to-br from-gray-100 to-white min-h-screen text-gray-800 flex flex-col">
     <!-- Header -->
     <header class="bg-white shadow sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 class="text-2xl font-bold text-blue-600">Ma Boutique</h1>
-      
-          <!-- Liens quand visiteur -->
-          <nav class="space-x-4" id="navLinks">
-            <a href="login.html" class="text-sm text-gray-700 hover:text-blue-600">Se connecter</a>
-            <a href="register.html" class="text-sm text-gray-700 hover:text-blue-600">S'inscrire</a>
-          </nav>
-      
-          <!-- Liens quand connecté -->
-          <nav class="space-x-4 hidden" id="navUser">
-            <span class="text-sm text-gray-700" id="navUsername"></span>
-            <button id="logoutBtn" class="text-sm text-red-600 hover:underline">Déconnexion</button>
-          </nav>
-        </div>
-      </header>
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-blue-600">Ma Boutique</h1>
+
+        <!-- Liens quand visiteur -->
+        <nav class="space-x-4" id="navLinks">
+          <a href="login.html" class="text-sm text-gray-700 hover:text-blue-600">Se connecter</a>
+          <a href="register.html" class="text-sm text-gray-700 hover:text-blue-600">S'inscrire</a>
+        </nav>
+
+        <!-- Liens quand connecté -->
+        <nav class="space-x-4 hidden" id="navUser">
+          <span class="text-sm text-gray-700" id="navUsername"></span>
+          <a href="/dashboard.html" id="dashboardBtn" class="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
+            🛠️ Dashboard
+          </a>
+          <button id="logoutBtn" class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">🚪 Déconnexion</button>
+        </nav>
+      </div>
+    </header>
 
     <!-- Main content -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-10 space-y-12">
@@ -70,6 +73,6 @@
     </footer>
 
     <!-- JS -->
-    <script type="module" src="/src/js/main.js"></script>
+    <script type="module" src="/src/js/main.js" nonce="{{nonce}}"></script>
   </body>
 </html>

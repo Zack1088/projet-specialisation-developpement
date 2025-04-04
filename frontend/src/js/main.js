@@ -9,23 +9,42 @@ function fetchCSRF() {
     .then((data) => (csrfToken = data.csrfToken));
 }
 
-// 👤 Récupère la session utilisateur
-function fetchUserSession() {
-  return fetch(`${api}/auth/me`, { credentials: 'include' })
-    .then((res) => {
-      if (!res.ok) throw new Error('Pas connecté');
-      return res.json();
-    })
-    .then((data) => {
-      user = data.user;
-      updateNav();
-    })
-    .catch(() => {
+// 👤 Récupère la session utilisateur via /me puis /profile/:id
+async function fetchUserSession() {
+  try {
+    const meRes = await fetch(`${api}/auth/me`, {
+      credentials: 'include',
+    });
+
+    if (meRes.status === 401) {
+      // Visiteur non connecté = pas une erreur bloquante
       user = null;
       updateNav();
-    });
-}
+      return;
+    }
 
+    if (!meRes.ok) throw new Error('Erreur lors de /me');
+
+    const { id } = await meRes.json();
+
+    const profileRes = await fetch(`${api}/auth/profile/${id}`, {
+      credentials: 'include',
+    });
+
+    if (!profileRes.ok) throw new Error('Erreur lors de /profile');
+
+    user = await profileRes.json();
+  } catch (err) {
+    user = null;
+
+    if (!['Erreur lors de /me', 'Erreur lors de /profile'].includes(err.message)) {
+      // silence les 401 (visiteur), affiche les vraies erreurs
+      console.warn('[fetchUserSession] ❌', err.message);
+    }
+  }
+
+  updateNav();
+}
 // 🔄 Met à jour la navigation selon connexion
 function updateNav() {
   const navLinks = document.getElementById('navLinks');
@@ -33,12 +52,13 @@ function updateNav() {
   const navUsername = document.getElementById('navUsername');
 
   if (user) {
-    navLinks.classList.add('hidden');
-    navUser.classList.remove('hidden');
-    navUsername.textContent = `Bonjour ${user.username}`;
+    navLinks?.classList.add('hidden');
+    navUser?.classList.remove('hidden');
+    navUsername.textContent = `Bonjour ${user.username ?? user.name ?? 'Utilisateur'}`;
   } else {
-    navLinks.classList.remove('hidden');
-    navUser.classList.add('hidden');
+    navLinks?.classList.remove('hidden');
+    navUser?.classList.add('hidden');
+    navUsername.textContent = '';
   }
 }
 
@@ -127,7 +147,7 @@ function addToCart(productId) {
     })
   })
     .then((res) => {
-      if (!res.ok) throw new Error('Erreur lors de l’ajout au panier');
+      if (!res.ok) throw new Error("Erreur lors de l’ajout au panier");
       return res.json();
     })
     .then(() => fetchCart())
@@ -150,12 +170,46 @@ function fetchCart() {
       const ul = document.getElementById('cart');
       ul.innerHTML = '';
       items.forEach((item) => {
-        ul.innerHTML += `<li>${item.name} x ${item.quantity} - ${item.price} €</li>`;
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${item.name} x ${item.quantity} - ${item.price} €
+          <button class="ml-2 text-red-600 hover:underline text-sm" data-id="${item.product_id}">Supprimer</button>
+        `;
+        ul.appendChild(li);
       });
+
+      // 🎯 Supprimer un produit au clic sur "Supprimer"
+      ul.querySelectorAll('button[data-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          removeFromCart(id);
+        });
+      });
+
       document.getElementById('total').textContent = total.toFixed(2);
     })
     .catch((err) => {
       console.error('Erreur panier :', err);
+    });
+}
+
+// ❌ Supprime un produit du panier
+function removeFromCart(productId) {
+  const route = user ? `/cart/${user.id}/${productId}` : `/cart/session/${productId}`;
+
+  return fetch(`${api}${route}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'X-CSRF-Token': csrfToken
+    }
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error('Suppression échouée');
+      return fetchCart();
+    })
+    .catch((err) => {
+      console.error('Erreur suppression :', err);
     });
 }
 
