@@ -26,8 +26,8 @@ Dernière mise à jour : 2025-04-04
 ├── backend/
 │   ├── app.js                  # App Express principale
 │   ├── routes/                 # Routes API (auth, cart, etc.)
-│   ├── middlewares/           # CSP, sessions, etc.
-│   ├── controllers/           # Logique métier
+│   ├── middlewares/            # CSP, sessions, etc.
+│   ├── controllers/            # Logique métier
 │   └── ...
 ├── frontend/
 │   ├── src/
