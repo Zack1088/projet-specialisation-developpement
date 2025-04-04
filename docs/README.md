@@ -153,6 +153,7 @@ Content-Security-Policy: script-src 'self' 'nonce-abc123'; style-src 'self' 'non
 - ✅ Connexion / déconnexion persistante via cookies
 - ✅ Build injecte correctement le `nonce` dans les JS
 - ✅ Aucun `<script>` inline bloqué par la CSP
+- ✅ Connexion à un utilisateur de test : Email - user@example.com, Mot de passe - testPass 
 
 ---
 
