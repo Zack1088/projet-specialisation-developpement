@@ -31,7 +31,8 @@ Dernière mise à jour : 2025-04-04
 │   ├── controllers/           # Logique métier
 |   ├── tests/                 # Tests unitaires
 |   ├── server.js              # Initialisation du serveur
-│   └── ...
+│   └── models/                # Modèles
+│   └── config/                # Configuration de la base de donnée
 ├── frontend/
 │   ├── src/
 │   │   ├── index.html          # Page publique
