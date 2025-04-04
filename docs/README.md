@@ -16,6 +16,7 @@ Dernière mise à jour : 2025-04-04
   - HSTS, Helmet
 - **Gestion des erreurs CSP** : reporting JSON (`/api/csp-reports`)
 - **Middleware** de session global : `verifySession`
+- **UnitsTest** : Framework JEST et SUPERTEST
 
 ---
 
@@ -24,10 +25,12 @@ Dernière mise à jour : 2025-04-04
 ```
 .
 ├── backend/
-│   ├── app.js                  # App Express principale
-│   ├── routes/                 # Routes API (auth, cart, etc.)
+│   ├── app.js                 # App Express principale
+│   ├── routes/                # Routes API (auth, cart, etc.)
 │   ├── middlewares/           # CSP, sessions, etc.
 │   ├── controllers/           # Logique métier
+|   ├── tests/                 # Tests unitaires
+|   ├── server.js              # Initialisation du serveur
 │   └── ...
 ├── frontend/
 │   ├── src/
