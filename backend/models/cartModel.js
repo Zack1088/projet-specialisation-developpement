@@ -34,6 +34,17 @@ module.exports = (() => {
         }),
       ),
 
+    removeByUserAndProduct: (userId, productId) =>
+      new Promise((resolve, reject) =>
+        db().run(
+          'DELETE FROM panier WHERE user_id = ? AND product_id = ?',
+          [userId, productId],
+          function (err) {
+            return err ? reject(err) : resolve({ deleted: this.changes > 0 });
+          },
+        ),
+      ),
+
     clearCart: (userId) =>
       new Promise((resolve, reject) =>
         db().run(

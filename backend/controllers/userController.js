@@ -6,7 +6,7 @@ exports.register = (req, res) =>
   bcrypt
     .hash(req.body.password, 10)
     .then((hashedPassword) =>
-      User.create(req.body.username, req.body.email, hashedPassword)
+      User.create(req.body.username, req.body.email, hashedPassword),
     )
     .then((user) => res.status(201).json({ message: 'Utilisateur créé', user }))
     .catch((err) => res.status(400).json({ error: err.message }));
@@ -19,7 +19,10 @@ exports.login = (req, res) =>
       }
       return bcrypt.compare(req.body.password, user.password).then((valid) => {
         if (!valid) {
-          return Promise.reject({ code: 401, message: 'Mot de passe incorrect' });
+          return Promise.reject({
+            code: 401,
+            message: 'Mot de passe incorrect',
+          });
         }
 
         // ✅ Enregistre l'utilisateur dans la session
@@ -36,7 +39,7 @@ exports.login = (req, res) =>
       });
     })
     .catch((err) =>
-      res.status(err.code || 500).json({ error: err.message || err })
+      res.status(err.code || 500).json({ error: err.message || err }),
     );
 
 exports.getProfile = (req, res) =>
@@ -44,7 +47,7 @@ exports.getProfile = (req, res) =>
     .then((user) =>
       user
         ? res.json(user)
-        : res.status(404).json({ error: 'Utilisateur non trouvé' })
+        : res.status(404).json({ error: 'Utilisateur non trouvé' }),
     )
     .catch((err) => res.status(500).json({ error: err.message }));
 

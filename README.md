@@ -1,106 +1,187 @@
-# 📄 Projet Spécialisation Développement - API + Frontend Vite
 
-## 🚀 Objectif
-Une application fullstack avec :
-- Backend Express/SQLite3 (port 5000)
-- Frontend Vite + HTML/CSS/JS (port 3000)
-- Programmation fonctionnelle 
-- Sécurité via JWT + CSRF + CORS
+# 🛒 Ma Boutique – Documentation Développeur
+
+Dernière mise à jour : 2025-04-04
+
+## 🔧 Stack utilisée
+
+- **Frontend** : HTML + TailwindCSS + JS (modulaire ES6)
+- **Bundler** : Vite (dev + build)
+- **Backend** : Node.js + Express
+- **Base de données** : SQLite (test)
+- **Session / Auth** : express-session + cookie
+- **Sécurité** :
+  - CSP (Content Security Policy) strict avec `nonce`
+  - CSRF protection avec `csurf`
+  - HSTS, Helmet
+- **Gestion des erreurs CSP** : reporting JSON (`/api/csp-reports`)
+- **Middleware** de session global : `verifySession`
 
 ---
 
-## 🌐 Aperçu des technologies
-| Côté        | Stack principale                       |
-|------------|-----------------------------------------|
-| Backend    | Node.js, Express, SQLite3               |
-| Frontend   | Vite (template vanilla), Tailwind CSS   |
-| Auth       | JWT, bcryptjs                           |
-| Sécurité   | Helmet, CORS, CSRF                      |
+## 📁 Structure du projet
 
----
-
-## 🛠️ Installation du projet
-
-### ✅ 1. Cloner le projet
-```bash
-git clone https://github.com/Zack1088/projet-specialisation-developpement.git
-cd projet-specialisation-developpement
+```
+.
+├── backend/
+│   ├── app.js                  # App Express principale
+│   ├── routes/                 # Routes API (auth, cart, etc.)
+│   ├── middlewares/           # CSP, sessions, etc.
+│   ├── controllers/           # Logique métier
+│   └── ...
+├── frontend/
+│   ├── src/
+│   │   ├── index.html          # Page publique
+│   │   ├── login.html          # Connexion
+│   │   ├── register.html       # Inscription
+│   │   ├── dashboard.html      # Interface admin
+│   │   └── js/
+│   │       ├── main.js         # Logique de la boutique (visiteur / user)
+│   │       ├── dashboard.js    # Interface d'administration
+│   │       └── injector.js     # Dev uniquement : injection CSP
+│   └── dist/                   # Fichiers générés par Vite
+├── vite.config.js              # Config vite avec plugin nonce
+├── vite-plugin-csp-nonce.js    # Plugin personnalisé CSP pour dev
+└── README.md                   # Ce fichier ✨
 ```
 
-### ✅ 2. Installer les dépendances backend (racine)
+---
+
+## 🚀 Lancement en dev
+
+### Backend
+
 ```bash
+cd backend
 npm install
+npm run dev
 ```
 
-### ✅ 3. Installer les dépendances frontend (Vite)
+### Frontend
+
 ```bash
 cd frontend
 npm install
-cd ..
-```
-
----
-
-## ▶️ Lancement du projet
-```bash
 npm run dev
 ```
-Cela lance en parallèle :
-- 🎮 Vite (frontend) sur [http://localhost:3000](http://localhost:3000)
-- 💡 API backend sur [http://localhost:5000](http://localhost:5000)
+
+⚠️ Assure-toi que le serveur Express tourne sur `http://localhost:5000` et Vite sur `http://localhost:3000`.
+
 
 ---
 
-## 🌐 Architecture des dossiers
-```
-projet-specialisation-developpement/
-├── backend/              # Code serveur Node.js + Express
-├── frontend/             # Frontend Vite (JS/HTML/CSS)
-│   ├── index.html
-│   ├── js/
-│   └── css/
-├── package.json          # Gestion globale (scripts backend + dev)
-└── README.md             # Document explicatif
-```
+## 🏗️ Build de production
 
----
-
-## 🎨 Frontend (Vite)
-- Chargement des produits
-- Ajout au panier
-- Authentification (connexion/inscription)
-- Dashboard utilisateur (appliqué via JWT)
-
-### Scripts disponibles dans `/frontend` :
 ```bash
-npm run dev       # démarrage du serveur Vite
-npm run build     # build production
-npm run preview   # prévisualisation build
+cd frontend
+npm run build
+```
+
+Cela génère un dossier `dist/` contenant tous les fichiers nécessaires, injectés avec `nonce` via `app.js` dans Express.
+Le projet prod sera accéssible sur: `http://localhost:5000`
+
+---
+
+## ✨ Fonctionnalités
+
+- 🔐 Authentification utilisateur
+- 📦 Gestion des produits (catalogue)
+- 🛒 Panier :
+  - Visiteur : session côté serveur
+  - Utilisateur connecté : panier en base de données
+- 🧾 Affichage dynamique des produits
+- 🧹 Suppression d’articles du panier (DOM + base/session)
+- 📊 Route de statistiques : `/api/stats`
+- 🛡️ Rapport CSP JSON disponible : `/api/csp-reports` (accessible uniquement si activé)
+
+---
+
+## 🔧 Configuration Vite
+
+Vite buildera automatiquement les fichiers `index.html`, `login.html`, `register.html`, `dashboard.html` dans `/dist`. Les scripts générés sont injectés avec le `nonce` via Express.
+
+Exemple dans `index.html` :
+```html
+<script type="module" src="/assets/main.js" nonce="{{nonce}}"></script>
 ```
 
 ---
 
-## 🔒 Backend (Express)
-- JWT auth
-- CSRF protection (via cookie + header)
-- SQLite3 persistante
-- Routes REST : `/api/products`, `/api/cart`, `/api/auth`, etc.
+## 🔐 Sécurité & Middleware
+
+- Middleware `verifySession` bloque les accès aux routes sensibles
+- Route `/dashboard.html` protégée côté serveur Express
+- Les routes API `/api/cart` et `/api/auth/profile/:id` exigent une session valide
+- Fallback sécurisé pour visiteurs (retour 401)
 
 ---
 
-## 🚫 Important :
-- Le frontend fonctionne uniquement si le **token JWT** est présent (cookie ou localStorage)
-- Toute requête `POST/PUT/DELETE` doit être accompagnée d'un token CSRF (via `/api/csrf-token`)
+## 👤 Authentification
+
+- `/api/auth/login` : connexion (via email / mdp)
+- `/api/auth/me` : renvoie l'objet `<built-in function id>` si connecté (sinon 401)
+- `/api/auth/profile/:id` : renvoie l'utilisateur complet (protégé)
+- `logout` supprime la session
 
 ---
 
-## 🚀 Pour aller plus loin
-- Ajouter un dashboard admin (role-based access)
-- Ajouter des tests avec Jest ou Vitest
-- Ajouter un panneau de statistiques
-- Passer le backend en architecture REST + validation JOI
-- Déploiement : Vercel (front) + Render / Railway (API)
+## 🧠 Politique CSP
+
+Injectée dynamiquement dans `app.js` Express avec un `nonce` généré par requête.
+
+```http
+Content-Security-Policy: script-src 'self' 'nonce-abc123'; style-src 'self' 'nonce-abc123'; object-src 'none'; base-uri 'none'; report-uri /api/csp-reports;
+```
 
 ---
 
-**Made with ❤️ + Vite + FP mindset**
+## 🔍 Suivi des erreurs CSP
+
+- Requêtes envoyées à `/api/csp-reports`
+- Format JSON (type `application/csp-report`)
+- Affichées dans le backend (console)
+- Les rapports son consultable via `http://localhost:5000//api/csp-report`
+---
+
+## 🧪 Tests conseillés
+
+- ✅ Accès dashboard uniquement si connecté
+- ✅ Panier dynamique selon session / visiteur
+- ✅ Connexion / déconnexion persistante via cookies
+- ✅ Build injecte correctement le `nonce` dans les JS
+- ✅ Aucun `<script>` inline bloqué par la CSP
+
+---
+
+## 🧼 À venir (TODO)
+
+- Gestion des images produit
+- Pagination des produits
+- Page profil utilisateur
+- Intégration Stripe (paiement)
+
+---
+
+## 🙌 Auteur
+
+Développé avec ❤️ par Bastien et Zack. Pour toute question, suggestion ou bug : ouvre une issue ou contacte-nous.
+
+---
+
+## 🙏 Remerciements
+
+Merci aux packages :
+- [Vite](https://vitejs.dev/)
+- [Express](https://expressjs.com/)
+- [SQLite3](https://www.sqlite.org/)
+- [Helmet](https://helmetjs.github.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- Et toi, cher·e lecteur·rice ❤️
+
+---
+
+## 📄 License
+
+MIT - libre d'utilisation pour tout projet personnel ou pédagogique.
+
+**Happy coding !**

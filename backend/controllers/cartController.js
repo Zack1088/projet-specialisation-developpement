@@ -9,24 +9,26 @@ exports.addToCart = (req, res) => {
     // ✅ Utilisateur connecté → en base de données
     return CartModel.addToCart(user_id, product_id, quantity)
       .then((item) =>
-        res.status(201).json({ message: 'Article ajouté au panier', item })
+        res.status(201).json({ message: 'Article ajouté au panier', item }),
       )
-      .catch((err) =>
-        res.status(400).json({ error: err.message })
-      );
+      .catch((err) => res.status(400).json({ error: err.message }));
   }
 
   // 👤 Visiteur → stockage dans session
   req.session.cart = req.session.cart || [];
 
-  const existing = req.session.cart.find((item) => item.product_id === product_id);
+  const existing = req.session.cart.find(
+    (item) => item.product_id === product_id,
+  );
   if (existing) {
     existing.quantity += quantity;
   } else {
     req.session.cart.push({ product_id, quantity });
   }
 
-  return res.status(201).json({ message: 'Article ajouté au panier (visiteur)' });
+  return res
+    .status(201)
+    .json({ message: 'Article ajouté au panier (visiteur)' });
 };
 
 // 🧾 Panier visiteur enrichi avec infos produit (même sans session.user)
@@ -50,9 +52,11 @@ exports.getCartSession = async (req, res) => {
       };
     });
 
-    const total = items.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
+    const total = items.reduce(
+      (acc, curr) => acc + curr.price * curr.quantity,
+      0,
+    );
     res.json({ items, total });
-
   } catch (err) {
     console.error('Erreur panier visiteur :', err);
     res.status(500).json({ error: 'Erreur lors du chargement du panier' });
@@ -80,7 +84,7 @@ exports.getCartByUser = (req, res) => {
           quantity: p.quantity,
           images: JSON.parse(p.images),
         })),
-      })
+      }),
     )
     .catch((err) => res.status(500).json({ error: err.message }));
 };
@@ -91,7 +95,7 @@ exports.removeFromCart = (req, res) => {
     .then((result) =>
       result.deleted
         ? res.json({ message: 'Article supprimé du panier' })
-        : res.status(404).json({ error: 'Élément non trouvé' })
+        : res.status(404).json({ error: 'Élément non trouvé' }),
     )
     .catch((err) => res.status(500).json({ error: err.message }));
 };
@@ -100,7 +104,37 @@ exports.removeFromCart = (req, res) => {
 exports.clearCart = (req, res) => {
   CartModel.clearCart(req.params.userId)
     .then((result) =>
-      res.json({ message: `Panier vidé (${result.cleared} élément(s))` })
+      res.json({ message: `Panier vidé (${result.cleared} élément(s))` }),
+    )
+    .catch((err) => res.status(500).json({ error: err.message }));
+};
+
+// ❌ Supprimer un item du panier visiteur (par productId)
+exports.removeFromVisitorCart = (req, res) => {
+  const productId = parseInt(req.params.productId, 10);
+  req.session.cart = req.session.cart || [];
+
+  const initialLength = req.session.cart.length;
+  req.session.cart = req.session.cart.filter(
+    (item) => item.product_id !== productId,
+  );
+
+  if (req.session.cart.length === initialLength) {
+    return res.status(404).json({ error: 'Produit non trouvé dans le panier' });
+  }
+
+  res.json({ message: 'Produit supprimé du panier (visiteur)' });
+};
+
+// ❌ Supprimer un item du panier connecté (par userId et productId)
+exports.removeByUserAndProduct = (req, res) => {
+  const { userId, productId } = req.params;
+
+  CartModel.removeByUserAndProduct(userId, productId)
+    .then((result) =>
+      result.deleted
+        ? res.json({ message: 'Produit supprimé du panier' })
+        : res.status(404).json({ error: 'Élément non trouvé' }),
     )
     .catch((err) => res.status(500).json({ error: err.message }));
 };

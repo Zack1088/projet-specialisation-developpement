@@ -1,6 +1,6 @@
 module.exports = (req, res, next) => {
-  // 💡 Skip vérification si c’est la route visiteur
-  if (req.originalUrl === '/api/cart/session') return next();
+  // ✅ Autorise toutes les routes commençant par /api/cart/session (visiteur)
+  if (req.originalUrl.startsWith('/api/cart/session')) return next();
 
   console.log('✅ verifySession exécuté sur:', req.originalUrl);
 

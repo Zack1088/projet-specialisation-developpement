@@ -9,5 +9,6 @@ router.delete('/user/:userId', controller.clearCart);
 
 // ✅ 🧨 Doit être placée en dernier !
 router.get('/:userId', controller.getCartByUser);
+router.delete('/:userId/:productId', controller.removeByUserAndProduct);
 
 module.exports = router;

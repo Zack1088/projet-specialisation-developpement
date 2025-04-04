@@ -8,7 +8,9 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const hsts = require('hsts');
 
+// 📦 Routes & middlewares
 const verifySession = require('./middlewares/verifySession');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -17,45 +19,57 @@ const visitorCartRoutes = require('./routes/visitorCartRoutes');
 
 const app = express();
 
-// 🧠 Middleware : nonce aléatoire à chaque requête
+const distPath = path.join(__dirname, '../frontend/dist');
+
+// 🧠 Middleware : nonce CSP aléatoire à chaque requête
 app.use((req, res, next) => {
   res.locals.nonce = crypto.randomBytes(16).toString('base64');
   next();
 });
 
-// 🛡️ CSP : politique stricte + reporting
+// 🛡️ CSP strict + reporting JSON
 app.use((req, res, next) => {
   const nonce = res.locals.nonce;
-  res.setHeader('Content-Security-Policy', [
-    `script-src 'strict-dynamic' 'nonce-${nonce}' https: http:`,
-    `object-src 'none'`,
-    `base-uri 'none'`,
-    `require-trusted-types-for 'script'`,
-    `report-uri /api/csp-reports`
-  ].join('; '));
+
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      `script-src 'self' 'nonce-${nonce}'`,
+      `style-src 'self' 'nonce-${nonce}'`,
+      `object-src 'none'`,
+      `base-uri 'none'`,
+      `report-uri /api/csp-reports`,
+    ].join('; '),
+  );
+
   next();
 });
 
-// 🔐 Session utilisateur
-app.use(session({
-  secret: 'supersecret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: false, // 👉 à passer à `true` en HTTPS prod
-    sameSite: 'lax',
-  },
-}));
+// 🔒 HSTS pour forcer HTTPS (en prod)
+app.use(hsts({ maxAge: 15552000 }));
 
-// 🌐 Middleware classiques
+// 🔐 Sessions
+app.use(
+  session({
+    secret: 'supersecret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+    },
+  }),
+);
+
+// ⚙️ Middlewares classiques
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(helmet({ contentSecurityPolicy: false })); // Désactive CSP interne d'Helmet
+app.use(helmet({ contentSecurityPolicy: false })); // CSP déjà gérée manuellement
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 
-// 🛡️ CSRF
+// 🛡️ CSRF protection
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
@@ -63,57 +77,99 @@ const csrfProtection = csrf({
     sameSite: 'lax',
   },
 });
+
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
-// 📦 Routes API
+// 🔐 API sécurisées
 app.use('/api/auth', csrfProtection, authRoutes);
 app.use('/api/products', csrfProtection, productRoutes);
 app.use('/api/cart/session', csrfProtection, visitorCartRoutes);
 app.use('/api/cart', csrfProtection, verifySession, cartRoutes);
 
-// 🏠 Page d'accueil de l'API
-app.get('/', (_, res) => res.json({ message: 'Bienvenue sur l’API' }));
+// 🧾 Exposition du nonce côté client (optionnel)
+app.get('/api/nonce', (req, res) => {
+  res.json({ nonce: res.locals.nonce });
+});
 
-// 📊 Reporting CSP (collecte)
+// 🧠 Middleware pour injecter dynamiquement le nonce dans les HTML buildés
+const serveHtmlWithNonce = (fileName) => (req, res) => {
+  const nonce = res.locals.nonce;
+  const filePath = path.join(distPath, fileName);
+
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+
+  fs.readFile(filePath, 'utf8', (err, html) => {
+    if (err) return res.status(500).send('Erreur serveur');
+
+    // 🔐 Injection du nonce dans la première balise <script type="module" ...>
+    const htmlWithNonce = html.replace(
+      /<script\s+type="module"([^>]*?)>/gi,
+      `<script type="module"$1 nonce="${nonce}">`,
+    );
+
+    console.log(`✅ [${fileName}] Nonce injecté dynamiquement :`, nonce);
+    res.send(htmlWithNonce);
+  });
+};
+
+// 🗂️ Pages HTML principales 
+app.get('/', serveHtmlWithNonce('index.html'));
+app.get('/login.html', serveHtmlWithNonce('login.html'));
+app.get('/register.html', serveHtmlWithNonce('register.html'));
+
+// Route dashboard protégée 
+app.get('/dashboard.html', verifySession, serveHtmlWithNonce('dashboard.html'));
+
+// ✅ Fichiers statiques du build Vite 
+app.use(express.static(distPath));
+
+// 🛡️ Mémoire des rapports CSP
 const cspReports = [];
-app.post('/api/csp-reports', express.json({ type: ['json', 'application/csp-report'] }), (req, res) => {
-  if (req.body['csp-report']) {
-    cspReports.push({
-      time: new Date().toISOString(),
-      ...req.body['csp-report'],
-    });
-    console.warn('🛡️ Rapport CSP reçu :', req.body['csp-report']);
-  }
-  res.status(204).end();
+
+// 👮 Headers précis pour les rapports CSP (prévol inclus)
+const allowCSPFromVite = (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+};
+
+// 🛑 OPTIONS = réponse immédiate pour le pré-vol
+app.options('/api/csp-reports', allowCSPFromVite, (req, res) => {
+  res.sendStatus(204);
 });
 
-// 🔒 Accès au reporting CSP (restreint aux utilisateurs connectés)
+// 📊 Réception des rapports CSP
+app.post(
+  '/api/csp-reports',
+  allowCSPFromVite,
+  express.json({ type: ['application/csp-report', 'application/json'] }),
+  (req, res) => {
+    const report = req.body['csp-report'] || req.body;
+    if (report) {
+      cspReports.push({ receivedAt: new Date().toISOString(), ...report });
+      console.warn('🛡️ Rapport CSP reçu :', report);
+    }
+    res.status(204).end();
+  },
+);
+
+// 🔐 Consultation (protégée si besoin)
 app.get('/api/csp-reports', (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Accès réservé' });
-  res.json(cspReports.slice(-50));
+  // if (!req.session.user) return res.status(401).json({ error: 'Accès réservé' });
+  res.json(cspReports.slice(-100));
 });
 
-// 📜 Fourniture du fichier security.txt
-app.get('/.well-known/security.txt', (_, res) => {
-  res.set('Content-Type', 'text/plain');
-  res.send(
-`Contact: mailto:security@votresite.com
-Expires: ${new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString()}
-Policy: https://votresite.com/securite
-Encryption: https://votresite.com/pgp.txt
-Acknowledgements: https://votresite.com/hall-of-fame
-Preferred-Languages: fr, en`
-  );
-});
-// ❌ Erreurs globales
+// 🔚 Gestion des erreurs globales
 app.use((err, _, res, __) => {
-  console.error('Erreur backend :', err);
+  console.error('❌ Erreur backend :', err);
   res.status(err.status || 500).json({
-    error: err.code === 'EBADCSRFTOKEN'
-      ? 'Token CSRF invalide'
-      : err.message,
+    error: err.code === 'EBADCSRFTOKEN' ? 'Token CSRF invalide' : err.message,
   });
 });
 
