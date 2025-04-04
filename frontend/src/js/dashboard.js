@@ -1,6 +1,6 @@
-
 const api = 'http://localhost:5000/api';
 let csrfToken = '';
+let user = null;
 
 function fetchCSRF() {
   return fetch(`${api}/csrf-token`, { credentials: 'include' })
@@ -9,6 +9,7 @@ function fetchCSRF() {
 }
 
 function fetchProducts() {
+  setupLogout()
   return fetch(`${api}/products`, { credentials: 'include' })
     .then(res => res.json())
     .then(renderProductList)
@@ -94,5 +95,37 @@ document.getElementById('productList').addEventListener('click', function (e) {
     }
   }
 });
+
+// 🚪 Déconnexion
+function setupLogout() {
+  const btn = document.getElementById('logoutBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      console.log('click')
+      fetch(`${api}/auth/logout`, { credentials: 'include' })
+        .then(() => {
+          user = null;
+          window.location.href = "http://localhost:3000/index.html";
+        });
+    });
+  }
+}
+
+// 👤 Récupère la session utilisateur
+function fetchUserSession() {
+  return fetch(`${api}/auth/me`, { credentials: 'include' })
+    .then((res) => {
+      if (!res.ok) throw new Error('Pas connecté');
+      return res.json();
+    })
+    .then((data) => {
+      user = data.user;
+      updateNav();
+    })
+    .catch(() => {
+      user = null;
+      updateNav();
+    });
+}
 
 fetchCSRF().then(fetchProducts);

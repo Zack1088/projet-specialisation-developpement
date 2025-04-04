@@ -2,7 +2,7 @@ const api = 'http://localhost:5000/api';
 let csrfToken = '';
 let user = null;
 
-// TODO : FAIRE DU FONCTIONNEL, Enlever les produits du panier, redirection du dashboard vers l'index, fiche produit, accéder à l'URL statistique, route statistique, visualiser dashboard (page vide), bouton se déconnecter dans le dashboard et ajouter une redirection vers la boutique, XSS.
+// TODO : FAIRE DU FONCTIONNEL, fiche produit, accéder à l'URL statistique, route statistique, visualiser dashboard (page vide), bouton se déconnecter dans le dashboard (mis en place mais fonctionne pas encore), XSS.
 
 // 🔐 Récupère le token CSRF
 function fetchCSRF() {
@@ -49,6 +49,7 @@ function setupLogout() {
   const btn = document.getElementById('logoutBtn');
   if (btn) {
     btn.addEventListener('click', () => {
+      console.log('click')
       fetch(`${api}/auth/logout`, { credentials: 'include' })
         .then(() => {
           user = null;
@@ -169,4 +170,3 @@ fetchCSRF()
     fetchCart();
     setupLogout();
   });
-
