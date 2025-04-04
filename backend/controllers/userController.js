@@ -6,10 +6,21 @@ exports.register = (req, res) =>
   bcrypt
     .hash(req.body.password, 10)
     .then((hashedPassword) =>
-      User.create(req.body.username, req.body.email, hashedPassword),
+      User.create(req.body.username, req.body.email, hashedPassword)
     )
-    .then((user) => res.status(201).json({ message: 'Utilisateur créé', user }))
-    .catch((err) => res.status(400).json({ error: err.message }));
+    .then((user) =>
+      res.status(201).json({ message: 'Utilisateur créé', user })
+    )
+    .catch((err) => {
+      if (
+        err.message.includes('UNIQUE constraint failed') ||
+        err.message.includes('SQLITE_CONSTRAINT')
+      ) {
+        return res.status(400).json({ error: 'Utilisateur existe déjà' });
+      }
+
+      return res.status(400).json({ error: err.message });
+    });
 
 exports.login = (req, res) =>
   User.findByEmail(req.body.email)
