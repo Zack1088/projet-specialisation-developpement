@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un compte</title>
+  <link rel="stylesheet" href="/src/css/style.css" />
+</head>
+<body class="bg-gradient-to-r from-indigo-800 to-blue-900 flex items-center justify-center min-h-screen p-4">
+  <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fade-in">
+    <h2 class="text-2xl font-bold text-center text-indigo-800 mb-8">Créer un compte</h2>
+
+    <form id="registerForm" class="space-y-6" novalidate>
+      <div>
+        <label for="username" class="block text-indigo-900 font-semibold mb-2">Nom d'utilisateur</label>
+        <input type="text" id="username" name="username" placeholder="Votre nom" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-700" required />
+        <p id="usernameError" class="text-sm text-red-600 mt-1 hidden">Champ requis</p>
+      </div>
+
+      <div>
+        <label for="email" class="block text-indigo-900 font-semibold mb-2">Adresse email</label>
+        <input type="email" id="email" name="email" placeholder="votre@email.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-700" required />
+        <p id="emailError" class="text-sm text-red-600 mt-1 hidden">Adresse invalide</p>
+      </div>
+
+      <div>
+        <label for="password" class="block text-indigo-900 font-semibold mb-2">Mot de passe</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-700" required />
+        <p id="passwordError" class="text-sm text-red-600 mt-1 hidden">Champ requis</p>
+      </div>
+
+      <div>
+        <label for="confirmPassword" class="block text-indigo-900 font-semibold mb-2">Confirmez le mot de passe</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-700" required />
+        <p id="confirmError" class="text-sm text-red-600 mt-1 hidden">Les mots de passe ne correspondent pas</p>
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-700 text-white py-3 rounded-lg font-semibold hover:bg-indigo-800 transition">
+        S'inscrire
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-600 mt-6">
+      Déjà inscrit ? <a href="login.html" class="text-indigo-700 font-semibold hover:underline">Se connecter</a>
+    </p>
+  </div>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+  </style>
+  <script type="module" crossorigin src="./src/js/register.js" nonce="{{nonce}}"></script>
+</body>
+</html>

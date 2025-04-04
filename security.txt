@@ -1,0 +1,11 @@
+Contact: mailto:security@example.com
+Expires: 2025-12-31T23:59:59.000Z
+Encryption: https://example.com/pgp-key.txt
+Acknowledgments: https://example.com/hall-of-fame.html
+Policy: https://example.com/security-policy.html
+Preferred-Languages: fr, en
+Canonical: https://example.com/.well-known/security.txt
+
+# Merci de signaler toute vulnérabilité de sécurité relative à l'API backend
+# en suivant la politique indiquée ci-dessus.
+# Nous vous remercions pour votre contribution à la sécurité de notre écosystème.

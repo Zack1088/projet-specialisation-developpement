@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accueil - Visiteur</title>
+    <link rel="stylesheet" href="/src/css/style.css" />
+  </head>
+
+  <body class="bg-gradient-to-br from-gray-100 to-white min-h-screen text-gray-800 flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow sticky top-0 z-10">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-blue-600">Ma Boutique</h1>
+
+        <!-- Liens quand visiteur -->
+        <nav class="space-x-4" id="navLinks">
+          <a href="login.html" class="text-sm text-gray-700 hover:text-blue-600">Se connecter</a>
+          <a href="register.html" class="text-sm text-gray-700 hover:text-blue-600">S'inscrire</a>
+        </nav>
+
+        <!-- Liens quand connecté -->
+        <nav class="space-x-4 hidden" id="navUser">
+          <span class="text-sm text-gray-700" id="navUsername"></span>
+          <a href="/dashboard.html" id="dashboardBtn" class="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
+            🛠️ Dashboard
+          </a>
+          <button id="logoutBtn" class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">🚪 Déconnexion</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-10 space-y-12">
+      <!-- Hero / Recherche -->
+      <section class="text-center space-y-4">
+        <h2 class="text-3xl font-bold text-gray-900">Découvrez nos produits</h2>
+        <input
+          type="text"
+          id="search"
+          placeholder="Rechercher un produit..."
+          class="w-full md:w-1/2 border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Champ de recherche de produits"
+        />
+      </section>
+
+      <!-- Catalogue -->
+      <section aria-labelledby="catalogue-heading">
+        <h3 id="catalogue-heading" class="text-xl font-semibold mb-4">Catalogue</h3>
+        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- JS injecte ici les cartes produits -->
+        </div>
+      </section>
+
+      <!-- Panier -->
+      <section class="bg-white p-6 rounded shadow-md" aria-labelledby="panier-heading">
+        <h3 id="panier-heading" class="text-xl font-semibold mb-4">Mon panier</h3>
+        <ul id="cart" class="divide-y divide-gray-200 space-y-2"></ul>
+        <p class="mt-4 font-bold text-right">Total : <span id="total">0</span> €</p>
+      </section>
+
+      <!-- Lien stats -->
+      <div class="text-center">
+        <a href="http://localhost:5000/api/stats" class="text-blue-600 hover:underline text-sm">
+          Voir les statistiques
+        </a>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t py-4 text-center text-sm text-gray-500">
+      &copy; 2025 Ma Boutique - Tous droits réservés
+    </footer>
+
+    <!-- JS -->
+    <script type="module" src="/src/js/main.js" nonce="{{nonce}}"></script>
+  </body>
+</html>
