@@ -2,4 +2,4 @@
 /.env
 /.prettierrc
 /.script_insert.js
-/data/datadabase.db
+# /data/database.db

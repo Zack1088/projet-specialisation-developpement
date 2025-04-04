@@ -16,6 +16,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const visitorCartRoutes = require('./routes/visitorCartRoutes');
+const statRoutes = require('./routes/statRoutes');
 
 const app = express();
 
@@ -81,6 +82,10 @@ const csrfProtection = csrf({
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
+
+//Route Stats (non protégée)
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+app.use('/api/stats', csrfProtection, statRoutes);
 
 // 🔐 API sécurisées
 app.use('/api/auth', csrfProtection, authRoutes);
