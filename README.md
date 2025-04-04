@@ -51,8 +51,9 @@ Dernière mise à jour : 2025-04-04
 
 ### Backend
 
+- Racine du projet
+
 ```bash
-cd backend
 npm install
 npm run dev
 ```
