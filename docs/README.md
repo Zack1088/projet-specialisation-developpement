@@ -16,6 +16,7 @@ Dernière mise à jour : 2025-04-04
   - HSTS, Helmet
 - **Gestion des erreurs CSP** : reporting JSON (`/api/csp-reports`)
 - **Middleware** de session global : `verifySession`
+- **UnitsTest** : Framework JEST et SUPERTEST
 
 ---
 
@@ -24,11 +25,14 @@ Dernière mise à jour : 2025-04-04
 ```
 .
 ├── backend/
-│   ├── app.js                  # App Express principale
-│   ├── routes/                 # Routes API (auth, cart, etc.)
+│   ├── app.js                 # App Express principale
+│   ├── routes/                # Routes API (auth, cart, etc.)
 │   ├── middlewares/           # CSP, sessions, etc.
 │   ├── controllers/           # Logique métier
-│   └── ...
+|   ├── tests/                 # Tests unitaires
+|   ├── server.js              # Initialisation du serveur
+│   └── models/                # Modèles
+│   └── config/                # Configuration de la base de donnée
 ├── frontend/
 │   ├── src/
 │   │   ├── index.html          # Page publique
@@ -150,6 +154,7 @@ Content-Security-Policy: script-src 'self' 'nonce-abc123'; style-src 'self' 'non
 - ✅ Connexion / déconnexion persistante via cookies
 - ✅ Build injecte correctement le `nonce` dans les JS
 - ✅ Aucun `<script>` inline bloqué par la CSP
+- ✅ Connexion à un utilisateur de test : Email - user@example.com, Mot de passe - testPass 
 
 ---
 

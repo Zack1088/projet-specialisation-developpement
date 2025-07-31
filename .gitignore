@@ -2,3 +2,5 @@
 /.env
 /.prettierrc
 /.script_insert.js
+# /data/database.db
+/.vscode
