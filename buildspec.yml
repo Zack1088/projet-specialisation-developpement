@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "=== INSTALLATION DES DEPENDANCES BACKEND ==="
+      - cd backend
+      - npm install
+      - cd ..
+      - echo "=== INSTALLATION DES DEPENDANCES FRONTEND ==="
+      - cd frontend
+      - npm install
+      - cd ..
+  build:
+    commands:
+      - echo "=== BUILD DU FRONTEND AVEC VITE ==="
+      - cd frontend
+      - npm run build
+      - cd ..
+  post_build:
+    commands:
+      - echo "=== BUILD TERMINE, PREPARATION POUR DEPLOIEMENT ==="
+artifacts:
+  files:
+    - '**/*'              # Inclut tout le projet
+  base-directory: '.'
